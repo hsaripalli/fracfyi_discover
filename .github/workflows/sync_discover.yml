@@ -1,0 +1,39 @@
+name: Sync Discover Commodity Benchmarks to Cloudflare R2
+
+on:
+  schedule:
+    # Runs Monday through Friday at 18:30 UTC (1:30 PM EST / 11:30 AM MT)
+    # Shortly after EIA publishes daily physical spot settlements
+    - cron: '30 18 * * 1-5'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  sync:
+    name: Fetch EIA Benchmarks & Upload to R2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run sync script
+        env:
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME || 'fracfyi-discover' }}
+          R2_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
+        run: |
+          python sync_commodity_benchmarks.py
