@@ -119,7 +119,7 @@ def upload_to_r2(payload_json: str):
         Key=R2_KEY,
         Body=payload_json.encode("utf-8"),
         ContentType="application/json",
-        CacheControl="public, max-age=300",
+        CacheControl="public, max-age=3600",
     )
     print("✓ Successfully uploaded to Cloudflare R2!")
 
