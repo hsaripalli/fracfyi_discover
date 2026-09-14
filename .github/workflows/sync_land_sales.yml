@@ -2,10 +2,13 @@ name: Sync Alberta Crown Land Sales to Cloudflare R2
 
 on:
   schedule:
-    # Runs every Wednesday at 20:00 UTC (14:00 MT / 2:00 PM Calgary time)
-    # Right after bi-weekly Alberta Crown land sales results are published at noon MT
+    # 1. Primary Sale Day (Wednesdays): 12:00 PM MT, 2:00 PM MT, 4:30 PM MT
+    - cron: '0 18 * * 3'
     - cron: '0 20 * * 3'
-  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+    - cron: '30 22 * * 3'
+    # 2. Safety Catch-up Day (Thursdays): 8:00 AM MT (catches any delayed government filings)
+    - cron: '0 14 * * 4'
+  workflow_dispatch: # Allows manual 1-click trigger anytime from GitHub Actions tab
 
 jobs:
   sync_land_sales:
