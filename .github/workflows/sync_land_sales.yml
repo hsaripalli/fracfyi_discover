@@ -1,0 +1,38 @@
+name: Sync Alberta Crown Land Sales to Cloudflare R2
+
+on:
+  schedule:
+    # Runs every Wednesday at 20:00 UTC (14:00 MT / 2:00 PM Calgary time)
+    # Right after bi-weekly Alberta Crown land sales results are published at noon MT
+    - cron: '0 20 * * 3'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  sync_land_sales:
+    name: Ingest Alberta Crown Land Sales & Upload to R2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run land sales sync script
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME || 'well-licence-list-ab' }}
+          R2_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
+        run: |
+          python sync_land_sales.py --upload-r2
