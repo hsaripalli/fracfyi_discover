@@ -60,9 +60,11 @@ def fetch_xml(stream_type: str, doc_id: str) -> ET.Element | None:
             content = r.content.decode("utf-8", errors="replace")
             # Strip all xmlns attributes to prevent XML parse errors with unbound prefixes
             clean_xml = re.sub(r'\sxmlns(:\w+)?="[^"]+"', '', content)
+            # ...and the attributes that used those prefixes (xsi:schemaLocation on the notices), now unbound.
+            clean_xml = re.sub(r'\s\w+:\w+="[^"]*"', '', clean_xml)
             return ET.fromstring(clean_xml)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"  ⚠️ Could not read {doc_id}: {e}", flush=True)
     return None
 
 
